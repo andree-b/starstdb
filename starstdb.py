@@ -143,12 +143,13 @@ class starstdb:
 
     def get_games(self):
         self.log.info("db.get_games")
-        sql = """ SELECT S.G, S.E, S.B, S.C, Round((S.C - S.B),2)
+        sql = """ SELECT S.G, S.E, S.B, S.C, Round((S.C - S.B),2),S.ABI
                     FROM (SELECT
                             Game as G,
                             SUM(Entries) as E,
                             ROUND(SUM((Buyin+Rake)*Entries),2) as B,
-                            ROUND(SUM(Cash+Bounties),2) as C
+                            ROUND(SUM(Cash+Bounties),2) as C,
+                            ROUND(SUM((Buyin+Rake)*Entries)/SUM(Entries),2) as ABI
                             FROM TOURNAMENTS Group By Game) S; """
         self.cursor_obj.execute(sql)
         rows = self.cursor_obj.fetchall()

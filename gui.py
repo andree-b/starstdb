@@ -8,7 +8,7 @@ import logging
 import os
 from ts_parser import TS_parser
 from hh_parser import HH_parser
-from plot_test import plot
+from plot import plot
 
 class gui(tk.Tk):
     def __init__(self, title, db, config):
@@ -135,6 +135,7 @@ class gui(tk.Tk):
         t.sheet.set_header_data("Total", 2)
         t.sheet.set_header_data("Cashed", 3)
         t.sheet.set_header_data("Delta", 4)
+        t.sheet.set_header_data("ABI", 5)
         t.geometry("640x320")
         t.mainloop()
         
@@ -143,7 +144,7 @@ class gui(tk.Tk):
         c=gui_config(self.config)
 
     def open_plot(self):
-        plot()
+        plot(0)
 
 class gui_table(tk.Tk):
     def __init__(self, title, data):
