@@ -1,0 +1,9 @@
+*.txt
+*.db
+*.ini
+*.res
+__pycache__
+build
+dist
+test
+
