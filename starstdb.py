@@ -3,6 +3,8 @@ import logging
 
 class starstdb:
 
+    ALL_GAMES = "all games"
+
     def add_tournament(self, data):
         sql = ''' SELECT * FROM TOURNAMENTS WHERE Tid=%d ; ''' % data[0]
         #print(sql)
@@ -115,9 +117,14 @@ class starstdb:
             self.log.info(row)
         return rows
 
-    def get_tournaments(self, game="all"):
-        self.log.info("db.get_tournaments")
-        sql = """ SELECT Tid,Game,Currency,(Buyin+Rake)*Entries,Buyin,Rake,Entries,Cash,Bounties,StartDate FROM TOURNAMENTS; """
+    def get_tournaments(self, game=ALL_GAMES):
+        self.log.info("db.get_tournaments %s " % game)
+        if game != self.ALL_GAMES:
+            w = " WHERE Game='%s'" % game
+        else:
+            w = ""
+        sql = """ SELECT Tid,Game,Currency,(Buyin+Rake)*Entries,Buyin,Rake,Entries,Cash,Bounties,StartDate FROM TOURNAMENTS%s; """ % w
+        self.log.info(sql)
         #LEFT JOIN PLAYERS P ON T.Uid = P.Uid;
         self.cursor_obj.execute(sql)
         rows = self.cursor_obj.fetchall()
@@ -125,15 +132,22 @@ class starstdb:
             self.log.debug(row)
         return rows
 
-    def get_days(self):
-        self.log.info("db.get_days")
+    def get_days(self, game=ALL_GAMES):
+        self.log.info("db.get_days %s" % game)
+        if game != self.ALL_GAMES:
+            w = " WHERE Game='%s'" % game
+        else:
+            w = ""
+        
         sql = """ SELECT S.SDate, S.E, S.B, S.C, Round((S.C - S.B),2)
                     FROM (SELECT
                             substr(StartDate,1,10) as SDate,
                             SUM(Entries) as E,
                             ROUND(SUM((Buyin+Rake)*Entries),2) as B,
                             ROUND(SUM(Cash+Bounties),2) as C
-                         FROM TOURNAMENTS Group By SDate) S; """
+                         FROM TOURNAMENTS%s Group By SDate) S; """ %w
+
+        self.log.info(sql)
         self.cursor_obj.execute(sql)
         rows = self.cursor_obj.fetchall()
         

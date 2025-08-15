@@ -52,13 +52,15 @@ class gui(tk.Tk):
         button = tk.Button(f4, text='Plot', width=30, command=self.open_plot)
         button.pack(fill=tk.Y, side=tk.LEFT)
 
-        # Dropdown options  
-        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]  
+        # Dropdown options
+        games = [row[0] for row in self.db.get_games()]
+        games.insert(0, self.db.ALL_GAMES)
+        self.log.debug(games)
 
         # Selected option variable  
-        opt = tk.StringVar(value="Monday")  
+        self.opt = tk.StringVar(value=games[0])  
 
-        combo = tk.OptionMenu(f4, opt, *days)
+        combo = tk.OptionMenu(f4, self.opt, *games)
         combo.pack(fill=tk.Y, side=tk.LEFT)
         
         #button = tk.Button(f4, text='Exit', width=30, command=self.destroy)
@@ -87,8 +89,9 @@ class gui(tk.Tk):
         p = HH_parser(self.db, self.config).parse_dir(hdir)
 
     def open_tournaments(self):
-        self.log.info("gui.open_tournaments");
-        t=gui_table("Tournaments", self.db.get_tournaments())
+        opt = self.opt.get()
+        self.log.info("gui.open_tournaments %s" % opt);
+        t=gui_table("Tournaments (%s)" % opt, self.db.get_tournaments(opt))
         t.sheet.set_header_data("T#ID", 0)
         t.sheet.set_header_data("Game", 1)
         t.sheet.column_width(1, 200)
@@ -114,8 +117,9 @@ class gui(tk.Tk):
         t.mainloop()
     
     def open_days(self):
-        self.log.info("gui.open_days");
-        t=gui_table("Days", self.db.get_days())
+        opt = self.opt.get()
+        self.log.info("gui.open_days %s" % opt);
+        t=gui_table("Days (%s)" % opt, self.db.get_days(opt))
         t.sheet.set_header_data("Date", 0)
         t.sheet.set_header_data("Entries", 1)
         t.sheet.column_width(1, 64)
@@ -144,7 +148,9 @@ class gui(tk.Tk):
         c=gui_config(self.config)
 
     def open_plot(self):
-        plot(0)
+        opt = self.opt.get()
+        self.log.info("gui.plot %s" % opt);
+        plot(opt)
 
 class gui_table(tk.Tk):
     def __init__(self, title, data):

@@ -14,11 +14,11 @@ import numpy as np
 def plot(gfilter):
     db = starstdb()
     #data = db.get_days()
-    data = db.get_tournaments()
+    data = db.get_tournaments(gfilter)
     print(len(data))
 
     root = tkinter.Tk()
-    root.wm_title("Embedding in Tk")
+    root.wm_title("startdb plot")
 
     fig = Figure(figsize=(5, 5), dpi=100)
 
@@ -33,8 +33,10 @@ def plot(gfilter):
     #rint(y1)
     p = fig.add_subplot(111)
 
-    p.set(xlabel='# of tournaments', ylabel='Amount in $',
-           title='starstdb')
+    xlab = "# of tournaments (%s - %s)" %(x[0],x[-1])
+
+    p.set(xlabel=xlab, ylabel='Amount in $',
+           title=gfilter)
     p.plot(y1, "-", label="cashes", drawstyle='steps-mid')
     p.plot(y2, "--", label="buyins", drawstyle='steps-mid')
     p.plot(y3, ":", label="result", drawstyle='steps-mid')
@@ -48,7 +50,8 @@ def plot(gfilter):
         #x2 = int(round(x1*len(x)))
         x2=int(x1)
         if x2>=0 and x2<len(x):
-            nlabs.append("%d - %s" % (x2,x[x2]))
+            #nlabs.append("%d - %s" % (x2,x[x2]))
+            nlabs.append(x2)
         else:
             nlabs.append("")
     #print(nlabs)
