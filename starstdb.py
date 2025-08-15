@@ -33,15 +33,16 @@ class starstdb:
         self.connection_obj.commit()
         return self.cursor_obj.lastrowid
 
-    def reset_tables(self):
+    def reset_tables(self, drop=True):
         # Drop the  table if already exists.
-        self.cursor_obj.execute("DROP TABLE IF EXISTS TOURNAMENTS")
-        self.cursor_obj.execute("DROP TABLE IF EXISTS STATS")
-        self.cursor_obj.execute("DROP TABLE IF EXISTS PLAYERS")
+        if drop:
+            self.cursor_obj.execute("DROP TABLE IF EXISTS TOURNAMENTS")
+            self.cursor_obj.execute("DROP TABLE IF EXISTS STATS")
+            self.cursor_obj.execute("DROP TABLE IF EXISTS PLAYERS")
           
         # Creating tables
         # main tournaments table:
-        table = """ CREATE TABLE TOURNAMENTS (
+        table = """ CREATE TABLE if not exists TOURNAMENTS (
                     Iid INTEGER PRIMARY KEY,
                     Tid UNSIGNED BIG INT NOT NULL,
                     Game CHAR(80),
@@ -56,7 +57,7 @@ class starstdb:
         self.cursor_obj.execute(table)   
 
         # players table:
-        table = """ CREATE TABLE PLAYERS (
+        table = """ CREATE TABLE if not exists PLAYERS (
                     Pid INTEGER PRIMARY KEY,
                     Name CHAR(80),
                     Country CHAR(25),
@@ -67,15 +68,16 @@ class starstdb:
 
 
         # stats table:
-        table = """ CREATE TABLE STATS (
+        table = """ CREATE TABLE if not exists STATS (
                     Sid INTEGER PRIMARY KEY,
-                    FOREIGN KEY (Player) REFERENCES PLAYERS (Pid)
+                    Player INTEGER,
                     Game CHAR(80),
                     Hands INT,
                     VPIP INT,
                     CBET INT,
                     TBET INT,
-                    F3B INT
+                    F3B INT,
+                    FOREIGN KEY (Player) REFERENCES PLAYERS (Pid)
                 ); """
 
         self.cursor_obj.execute(table)   
@@ -94,6 +96,7 @@ class starstdb:
          
         # cursor object
         self.cursor_obj = self.connection_obj.cursor()
+        self.reset_tables(False)
          
 
     def __del__(self):    
