@@ -4,6 +4,7 @@ from tksheet import (
     num2alpha,
     float_formatter)
 import tkinter as tk
+from tkinter import ttk
 import logging
 import os
 from ts_parser import TS_parser
@@ -33,7 +34,7 @@ class gui(tk.Tk):
         f5=tk.Frame(self.frame)
         f5.pack(fill=tk.X)
 
-        
+       
         button = tk.Button(f1, text='List of Tournaments', width=30, command=self.open_tournaments)
         button.pack(fill=tk.Y, side=tk.LEFT)
         button = tk.Button(f1, text='Reset', width=30, command=self.db_reset)
@@ -63,10 +64,6 @@ class gui(tk.Tk):
         combo = tk.OptionMenu(f4, self.opt, *games)
         combo.pack(fill=tk.Y, side=tk.LEFT)
         
-        #button = tk.Button(f4, text='Exit', width=30, command=self.destroy)
-        #button.pack(fill=tk.Y, side=tk.LEFT)
-
-
         button = tk.Button(f5, text='Config', width=30, command=self.edit_config)
         button.pack(fill=tk.Y, side=tk.LEFT)
         button = tk.Button(f5, text='Exit', width=30, command=self.destroy)
@@ -145,7 +142,10 @@ class gui(tk.Tk):
         
     def edit_config(self):
         self.log.info("gui.config");
-        c=gui_config(self.config)
+        
+        c = gui_config(self.config)
+        #c.mainloop()
+        self.log.info("gui.config end");
 
     def open_plot(self):
         opt = self.opt.get()
@@ -155,7 +155,7 @@ class gui(tk.Tk):
 class gui_table(tk.Tk):
     def __init__(self, title, data):
         #print(data)
-        tk.Tk.__init__(self)
+        tk.Toplevel.__init__(self)
         self.title(title)
         self.grid_columnconfigure(0, weight = 1)
         self.grid_rowconfigure(0, weight = 1)
@@ -203,15 +203,15 @@ class gui_table(tk.Tk):
                 self.sort_col = col+1
 
 class gui_config(tk.Tk):
-    def __init__(self, config):        
-        tk.Tk.__init__(self)
+    def __init__(self, config):
+        tk.Toplevel.__init__(self)
         self.log = logging.getLogger("starstdb")
         self.log.debug("gui_config.__init__")
         
         self.title("Configuration")
         self.config=config
-        self.grid_columnconfigure(0, weight = 1)
-        self.grid_rowconfigure(0, weight = 1)
+        #self.grid_columnconfigure(0, weight = 1)
+        #self.grid_rowconfigure(0, weight = 1)
         self.frame = tk.Frame(self)
         self.frame.pack()
         f1=tk.Frame(self.frame)
@@ -223,9 +223,12 @@ class gui_config(tk.Tk):
         f4=tk.Frame(self.frame)
         f4.pack(fill=tk.X)
 
+        fx=tk.Frame(self.frame)
+        fx.pack(fill=tk.X)
+
         l = tk.Label(f1, text='Directory', width=10)
         l.pack(fill=tk.Y, side=tk.LEFT)
-        
+               
         self.dir = tk.Entry(f1, width=60)
         self.dir.insert(0, self.config["main"]["dirname"])
         self.dir.pack(fill=tk.Y, side=tk.LEFT)
@@ -238,21 +241,43 @@ class gui_config(tk.Tk):
 
         button = tk.Button(f2, text='Check', width=30, command=self.check)
         button.pack(fill=tk.Y, side=tk.RIGHT)
+
+        l = tk.Label(f3, text='Loglevel', width=10)
+        l.pack(fill=tk.Y, side=tk.LEFT)
+
+        # Dropdown options
+        levels = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
+        self.log.debug(levels)
+
+        # Selected option variable  
+        self.llv = tk.StringVar()
+        self.llv.set(self.config["main"]["loglevel"])
+        self.log.debug(self.llv.get())
+
+        combo = tk.OptionMenu(f3, self.llv, *levels)
+        self.log.debug(repr(combo))
+        combo.pack(fill=tk.Y, side=tk.LEFT)
         
-        button = tk.Button(f4, text='Cancel', width=30, command=self.destroy)
+        
+        button = tk.Button(fx, text='Cancel', width=30, command=self.destroy)
         button.pack(fill=tk.Y, side=tk.LEFT)
-        button = tk.Button(f4, text='Save', width=30, command=self.save)
+        button = tk.Button(fx, text='Save', width=30, command=self.save)
         button.pack(fill=tk.Y, side=tk.LEFT)
 
 
     def save(self):
         self.log.debug("gui.config.save");
         self.log.debug("set dir = %s player %s " % (self.dir.get(), self.player.get()))
+                
         self.config["main"]["dirname"] = self.dir.get()
         self.config["main"]["player"] = self.player.get()
+        self.config["main"]["loglevel"] = self.llv.get()
         with open('starstdb.ini', 'w') as configfile:
             self.config.write(configfile)
-        self.destroy
+
+        lmap = {"CRITICAL": logging.CRITICAL, "ERROR":logging.ERROR, "WARNING": logging.WARNING, "INFO": logging.INFO, "DEBUG": logging.DEBUG}     
+        self.log.setLevel(lmap[self.llv.get()])
+        self.destroy()
 
     def check(self):
         self.log.debug("gui.config.check dir = %s player %s " % (self.dir.get(), self.player.get()));
